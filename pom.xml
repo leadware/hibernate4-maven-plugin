@@ -41,7 +41,7 @@
 	<description>Maven plugin for wrapping Hibernate ShemaExport, and tools for adding extended script after hbm2ddl goal</description>
 	
 	<!-- Project Version -->
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	
 	<!-- Packaging -->
 	<packaging>maven-plugin</packaging>
