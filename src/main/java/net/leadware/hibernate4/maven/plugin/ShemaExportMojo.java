@@ -180,15 +180,39 @@ public class ShemaExportMojo extends AbstractMojo {
     			// Parcours de la liste des scripts de creation
     			for (String script : extendedScripts.getCreateScripts()) {
     				
-    				// Ajout du script dans le fichier
-    				FileUtils.fileAppend(createFile.getAbsolutePath(), "\n\t" + script);
+    				// Tentative de construction d'un File sur le la chaine script
+    				File scriptFile = new File(script);
+    				
+    				// Si l'objet existe et est un fichier
+    				if(scriptFile.exists() && scriptFile.isFile()) {
+    					
+    					// Ajout de son contenu dans le fichier de script en cours
+    					FileUtils.fileAppend(createFile.getAbsolutePath(), "\n\n" + FileUtils.fileRead(scriptFile));
+    					
+    				} else {
+
+        				// Ajout du script dans le fichier
+        				FileUtils.fileAppend(createFile.getAbsolutePath(), "\n\t" + script);
+    				}
     			}
     			
     			// Parcours de la liste des scripts de suppression
     			for (String script : extendedScripts.getDropScripts()) {
     				
-    				// Ajout du script dans le fichier
-    				FileUtils.fileAppend(dropFile.getAbsolutePath(), "\n\t" + script);
+    				// Tentative de construction d'un File sur le la chaine script
+    				File scriptFile = new File(script);
+    				
+    				// Si l'objet existe et est un fichier
+    				if(scriptFile.exists() && scriptFile.isFile()) {
+    					
+    					// Ajout de son contenu dans le fichier de script en cours
+    					FileUtils.fileAppend(dropFile.getAbsolutePath(), "\n\n" + FileUtils.fileRead(scriptFile));
+    					
+    				} else {
+    					
+    					// Ajout du script dans le fichier
+        				FileUtils.fileAppend(dropFile.getAbsolutePath(), "\n\t" + script);
+    				}
     			}
     			
     			// Si le chemin des scripts de mise a jour est positionne
@@ -196,9 +220,21 @@ public class ShemaExportMojo extends AbstractMojo {
 
         			// Parcours de la liste des scripts de mise a jour
         			for (String script : extendedScripts.getUpdateScripts()) {
+
+        				// Tentative de construction d'un File sur le la chaine script
+        				File scriptFile = new File(script);
         				
-        				// Ajout du script dans le fichier
-        				FileUtils.fileAppend(updateFile.getAbsolutePath(), "\n\t" + script);
+        				// Si l'objet existe et est un fichier
+        				if(scriptFile.exists() && scriptFile.isFile()) {
+        					
+        					// Ajout de son contenu dans le fichier de script en cours
+        					FileUtils.fileAppend(updateFile.getAbsolutePath(), "\n\n" + FileUtils.fileRead(scriptFile));
+        					
+        				} else {
+        					
+        					// Ajout du script dans le fichier
+            				FileUtils.fileAppend(updateFile.getAbsolutePath(), "\n\t" + script);
+        				}
         			}
         			
     			}
