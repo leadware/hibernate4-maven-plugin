@@ -44,7 +44,7 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 /**
  * Mojo executant le goal hbm2ddl 
  * @author <a href="mailto:jetune@leadware.net">Jean-Jacques ETUNE NGI</a>
- * @since 22 déc. 2013 - 12:48:12
+ * @since 22 dec. 2013 - 12:48:12
  */
 @SuppressWarnings("deprecation")
 @Mojo(name = "hbm2ddl", 
@@ -103,7 +103,7 @@ public class ShemaExportMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
     	
     	// Un log
-    	getLog().info("Exportation de l'Unité de persistence: " + unitName + ".");
+    	getLog().info("Exportation de l'Unite de persistence: " + unitName + ".");
     	
     	// Initialisation du repertoire de sortie
     	initOutputDirectory();

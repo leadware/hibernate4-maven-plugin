@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Classe representant un fichier a generer par le plugin
  * @author <a href="mailto:jetune@leadware.net">Jean-Jacques ETUNE NGI</a>
- * @since 22 déc. 2013 - 17:56:44
+ * @since 22 dec. 2013 - 17:56:44
  */
 public class ExtendedScripts {
 	
