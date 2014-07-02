@@ -20,6 +20,8 @@ package net.leadware.hibernate4.maven.plugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -95,6 +97,12 @@ public class ShemaExportMojo extends AbstractMojo {
 	 */
 	@Parameter
 	private String dialect;
+
+	/**
+	 * Fichier de persistence
+	 */
+	@Parameter
+	private String persistenceFile;
 	
 	/**
 	 * Scripts additionnels
@@ -139,9 +147,21 @@ public class ShemaExportMojo extends AbstractMojo {
     		
     		// Positionnement du classloader avec ajout des chemins de classe du projet maven sous-jacent
     		currentThread.setContextClassLoader(buildClassLoader(oldClassLoader));
-    		
+
     		// Configuration EJB3
-    		final Ejb3Configuration jpaConfiguration = new Ejb3Configuration().configure(unitName, null);
+    		Ejb3Configuration jpaConfiguration = null;
+    		
+    		// Si le fichier de persistence est renseigne
+    		if(persistenceFile != null && !persistenceFile.trim().isEmpty()) {
+    			
+    			// On positionne le fichier de persistence
+    			jpaConfiguration = new Ejb3Configuration().addFile(persistenceFile).configure(unitName, null);
+    			
+    		} else {
+
+        		// Configuration EJB3
+        		jpaConfiguration = new Ejb3Configuration().configure(unitName, null);
+    		}
     		
     		// Configuration Hibernate
     		Configuration configuration = jpaConfiguration.getHibernateConfiguration();
