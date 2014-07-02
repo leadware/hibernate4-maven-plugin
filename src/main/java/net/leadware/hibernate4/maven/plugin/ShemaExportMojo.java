@@ -89,6 +89,12 @@ public class ShemaExportMojo extends AbstractMojo {
 	 */
 	@Parameter
 	private String updateOutputFile;
+
+	/**
+	 * Dialecte de generation
+	 */
+	@Parameter
+	private String dialect;
 	
 	/**
 	 * Scripts additionnels
@@ -139,6 +145,9 @@ public class ShemaExportMojo extends AbstractMojo {
     		
     		// Configuration Hibernate
     		Configuration configuration = jpaConfiguration.getHibernateConfiguration();
+    		
+    		// Si le dialect a ete precise dans la configuration du plugin
+    		if(dialect != null && !dialect.trim().isEmpty()) configuration.setProperty("hibernate.dialect", dialect.trim());
     		
     		// Exporteur de schema
     		SchemaExport exporter = new SchemaExport(configuration);
