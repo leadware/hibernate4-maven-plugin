@@ -20,13 +20,14 @@ package net.leadware.hibernate4.maven.plugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.persistence.spi.PersistenceUnitTransactionType;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -38,8 +39,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
+import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 
@@ -48,7 +51,6 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
  * @author <a href="mailto:jetune@leadware.net">Jean-Jacques ETUNE NGI</a>
  * @since 22 dec. 2013 - 12:48:12
  */
-@SuppressWarnings("deprecation")
 @Mojo(name = "hbm2ddl", 
 	  defaultPhase = LifecyclePhase.PROCESS_TEST_RESOURCES, 
 	  threadSafe = true, 
@@ -65,7 +67,7 @@ public class ShemaExportMojo extends AbstractMojo {
 	/**
 	 * Nom de l'unite de persistence
 	 */
-	@Parameter
+	@Parameter(defaultValue = "")
 	private String unitName;
 	
 	/**
@@ -89,20 +91,20 @@ public class ShemaExportMojo extends AbstractMojo {
 	/**
 	 * Fichier d'exportation des scripts de mise a jour
 	 */
-	@Parameter
+	@Parameter(defaultValue = "")
 	private String updateOutputFile;
-
+	
 	/**
 	 * Dialecte de generation
 	 */
-	@Parameter
+	@Parameter(defaultValue = "")
 	private String dialect;
-
+	
 	/**
-	 * Fichier de persistence
+	 * Nouveau Mapping ID
 	 */
-	@Parameter
-	private String persistenceFile;
+	@Parameter(defaultValue = "true")
+	private String newGeneratorMappings;
 	
 	/**
 	 * Scripts additionnels
@@ -147,27 +149,41 @@ public class ShemaExportMojo extends AbstractMojo {
     		
     		// Positionnement du classloader avec ajout des chemins de classe du projet maven sous-jacent
     		currentThread.setContextClassLoader(buildClassLoader(oldClassLoader));
-
-    		// Configuration EJB3
-    		Ejb3Configuration jpaConfiguration = null;
     		
-    		// Si le fichier de persistence est renseigne
-    		if(persistenceFile != null && !persistenceFile.trim().isEmpty()) {
-    			
-    			// On positionne le fichier de persistence
-    			jpaConfiguration = new Ejb3Configuration().addFile(persistenceFile).configure(unitName, null);
-    			
-    		} else {
-
-        		// Configuration EJB3
-        		jpaConfiguration = new Ejb3Configuration().configure(unitName, null);
-    		}
+    		// Persistence XML Parser
+    		PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser(new ClassLoaderServiceImpl(oldClassLoader), PersistenceUnitTransactionType.RESOURCE_LOCAL);
+    		
+    		// Parsing des fichier de persistence du classpath
+    		List<ParsedPersistenceXmlDescriptor> persistenceUnits = persistenceXmlParser.doResolve(new HashMap<String, String>());
     		
     		// Configuration Hibernate
-    		Configuration configuration = jpaConfiguration.getHibernateConfiguration();
+    		Configuration configuration = new Configuration();
+    		
+    		// Parcours des descripteurs
+    		for (ParsedPersistenceXmlDescriptor persistenceUnit : persistenceUnits) {
+				
+    			// Si le nom n'est pas celui attendu
+    			if(persistenceUnit.getName() == null || !persistenceUnit.getName().trim().equalsIgnoreCase(unitName.trim())) continue;
+    			
+    			// Obtention de la liste des noms de classe managees
+    			List<String> managedClassNames = persistenceUnit.getManagedClassNames();
+    			
+    			// Si la liste est nulle
+    			if(managedClassNames == null) managedClassNames = new ArrayList<String>();
+    			
+    			// Paracours des classes managees
+    			for (String managedClassName : managedClassNames) {
+					
+    				// Ajout de la classe dans la configuration
+    				configuration.addAnnotatedClass(Class.forName(managedClassName));
+				}
+			}
     		
     		// Si le dialect a ete precise dans la configuration du plugin
     		if(dialect != null && !dialect.trim().isEmpty()) configuration.setProperty("hibernate.dialect", dialect.trim());
+
+    		// Si le newGeneratorMappings a ete precise dans la configuration du plugin
+    		if(newGeneratorMappings != null && !newGeneratorMappings.trim().isEmpty()) configuration.setProperty("hibernate.id.new_generator_mappings", newGeneratorMappings.trim());
     		
     		// Exporteur de schema
     		SchemaExport exporter = new SchemaExport(configuration);
