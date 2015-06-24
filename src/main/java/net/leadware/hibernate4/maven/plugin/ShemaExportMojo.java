@@ -18,7 +18,6 @@
  */
 package net.leadware.hibernate4.maven.plugin;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
@@ -143,12 +142,12 @@ public class ShemaExportMojo extends AbstractMojo {
     	final ClassLoader oldClassLoader = currentThread.getContextClassLoader();
     	
     	try {
-			
+    		
     		// Positionnement de la sortie par defaut
-    		System.setOut(new PrintStream(new ByteArrayOutputStream()));
+    		// System.setOut(new PrintStream(new ByteArrayOutputStream()));
     		
     		// Positionnement du classloader avec ajout des chemins de classe du projet maven sous-jacent
-    		currentThread.setContextClassLoader(buildClassLoader(oldClassLoader));
+    		// currentThread.setContextClassLoader(buildClassLoader(oldClassLoader));
     		
     		// Persistence XML Parser
     		PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser(new ClassLoaderServiceImpl(oldClassLoader), PersistenceUnitTransactionType.RESOURCE_LOCAL);
@@ -161,6 +160,8 @@ public class ShemaExportMojo extends AbstractMojo {
     		
     		// Parcours des descripteurs
     		for (ParsedPersistenceXmlDescriptor persistenceUnit : persistenceUnits) {
+    			
+				System.out.println(persistenceUnit.getName());
 				
     			// Si le nom n'est pas celui attendu
     			if(persistenceUnit.getName() == null || !persistenceUnit.getName().trim().equalsIgnoreCase(unitName.trim())) continue;
@@ -174,6 +175,8 @@ public class ShemaExportMojo extends AbstractMojo {
     			// Paracours des classes managees
     			for (String managedClassName : managedClassNames) {
 					
+    				System.out.println(managedClassName);
+    				
     				// Ajout de la classe dans la configuration
     				configuration.addAnnotatedClass(Class.forName(managedClassName));
 				}
@@ -303,7 +306,7 @@ public class ShemaExportMojo extends AbstractMojo {
     /**
      * Methode d'initialisation du repertoire de sortie
      */
-    private void initOutputDirectory() {
+    protected void initOutputDirectory() {
     	
     	// Fichier create
     	File createDir = new File(createOutputFile.trim()).getParentFile();
@@ -325,12 +328,11 @@ public class ShemaExportMojo extends AbstractMojo {
         	
         	// Si le repertoire n'existe pas
         	if(!updateDir.exists()) updateDir.mkdirs();
-        	
     	}
     }
     
     @SuppressWarnings("unchecked")
-	private ClassLoader buildClassLoader(final ClassLoader delegate) {
+	protected ClassLoader buildClassLoader(final ClassLoader delegate) {
     	
     	try {
 			
